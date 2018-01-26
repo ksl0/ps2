@@ -214,7 +214,12 @@ def main():
     ### ========== TODO : START ========== ###
     # part a: evaluate training error of Decision Tree classifier
     print 'Classifying using Decision Tree...'
-    
+    clf = DecisionTreeClassifier(criterion="entropy")
+    clf.fit(X, y)
+    y_pred = clf.predict(X)    
+    train_error = 1 - metrics.accuracy_score(y, y_pred, normalize=True)
+    print '\t-- training error: %.3f' % train_error
+
     ### ========== TODO : END ========== ###
     
     
