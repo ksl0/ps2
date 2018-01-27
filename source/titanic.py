@@ -107,7 +107,16 @@ class RandomClassifier(Classifier) :
         """
 
         ### ========== TODO : START ========== ###
-        # insert your RandomClassifier code
+
+        # part c: set self.probabilities_ according to the training set
+
+        vals, counts = np.unique(y, return_counts=True)
+        majority_val, majority_count = max(zip(vals, counts), key=lambda (val, count): count)
+        minority_val, minority_count = min(zip(vals, counts), key=lambda (val, count): count)
+
+        # find the highest probability
+        self.probabilities_ = {majority_val: float(majority_count)/sum(counts),
+                               minority_val: float(minority_count)/sum(counts)}
 
         ### ========== TODO : END ========== ###
 
@@ -131,10 +140,15 @@ class RandomClassifier(Classifier) :
         np.random.seed(seed)
 
         ### ========== TODO : START ========== ###
-        # insert your RandomClassifier code
+        # part c: predict the class for each test example
+        # hint: use np.random.choice (be careful of the parameters)
 
-        y = None
+        class_distr = self.probabilities_
+        n, d = X.shape
 
+        # Create a random distribution based on given probabilities of survival
+        random_ys = np.random.choice(class_distr.keys(), n, p = class_distr.values())
+        y = random_ys
         ### ========== TODO : END ========== ###
 
         return y
@@ -283,6 +297,11 @@ def main():
     print '\t-- training error: %.3f' % train_error
     print '\t-- test error: %.3f' % test_error
 
+    print 'RandomClassifier Error'
+    train_error, test_error = error(RandomClassifier() , X, y, ntrials=100, test_size=0.2)
+    print '\t-- training error: %.3f' % train_error
+    print '\t-- test error: %.3f' % test_error
+
     print 'DecisionTreeClassifier Error'
     train_error, test_error = error(DecisionTreeClassifier(criterion="entropy"), X, y, ntrials=100, test_size=0.2)
     print '\t-- training error: %.3f' % train_error
@@ -297,44 +316,61 @@ def main():
     ### ========== TODO : START ========== ###
     # part c: investigate decision tree classifier with various depths
     print 'Investigating depths...'
+    clfs = [MajorityVoteClassifier(), RandomClassifier()]
+    label_clfs = ["MVC", "RC"]
+    for clf_index in range(0,len(clfs)):
+        train_error_arr = []
+        test_error_arr =[]
+        depths = range(1,21)
+        for depth in depths:
+            clf = clfs[clf_index]
+            train_error, test_error = error(clf,X,y)
+            train_error_arr.append(train_error)
+            test_error_arr.append(test_error)
+
+        plt.plot(depths, train_error_arr, label = label_clfs[clf_index] + " train error")
+        plt.plot(depths, test_error_arr, label = label_clfs[clf_index] + " test error")
+
     train_error_arr = []
     test_error_arr =[]
-    depths = range(1,21)
+    # only do the DecisionTreeClassifier One
     for depth in depths:
         clf = DecisionTreeClassifier(criterion="entropy", max_depth=depth)
         train_error, test_error = error(clf,X,y)
         train_error_arr.append(train_error)
         test_error_arr.append(test_error)
 
-    plt.plot(depths, train_error_arr, label = "train error")
-    plt.plot(depths, test_error_arr, label = "test error")
-
-    plt.xlabel("Max Depth of Decision Tree")
-    plt.ylabel("Average Error")
+    plt.plot(depths, train_error_arr, label = "DT train error")
+    plt.plot(depths, test_error_arr, label = "DT test error")
     plt.legend()
+    plt.xlabel("Max Depth")
+    plt.ylabel("Average Error")
     plt.show()
-
-
     ### ========== TODO : END ========== ###
+
 
 
 
     ### ========== TODO : START ========== ###
     # part d: investigate decision tree classifier with various training set sizes
     print 'Investigating training set sizes...'
-    train_error_arr = []
-    test_error_arr =[]
-    split_sizes =  map (lambda u: u*.05,  range(1,20))
-    for split in split_sizes:
-        clf = DecisionTreeClassifier(criterion="entropy", max_depth=6)
-        train_error, test_error = error(clf,X,y,test_size=split)
-        train_error_arr.append(train_error)
-        test_error_arr.append(test_error)
 
+    clfs = [MajorityVoteClassifier(), RandomClassifier(), DecisionTreeClassifier(criterion="entropy", max_depth=6)]
+    label_clfs = ["MVC", "RC", "DT"]
+    split_sizes =  map (lambda u: u*.05,  range(1,20))
     training_splits = map (lambda u: 1 - u,  split_sizes)
 
-    plt.plot(training_splits, train_error_arr, label = "train error")
-    plt.plot(training_splits, test_error_arr, label = "test error")
+    for clf_index in range(0, len(clfs)):
+        train_error_arr = []
+        test_error_arr =[]
+        for split in split_sizes:
+            clf = clfs[clf_index]
+            train_error, test_error = error(clf,X,y,test_size=split)
+            train_error_arr.append(train_error)
+            test_error_arr.append(test_error)
+
+        plt.plot(training_splits, train_error_arr, label = label_clfs[clf_index] + " train error")
+        plt.plot(training_splits, test_error_arr, label = label_clfs[clf_index] +" test error")
 
     plt.xlabel("Training Data Size")
     plt.ylabel("Average Error")
@@ -357,10 +393,7 @@ def main():
     #write_predictions(y_pred, "../data/yjw_titanic.csv", titanic.yname)
 
     ### ========== TODO : END ========== ###
-
-
     print 'Done'
-
 
 if __name__ == "__main__":
     main()
