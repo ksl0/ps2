@@ -181,6 +181,10 @@ class Tree(object) :
             ### ========== TODO : START ========== ###
             # part c: compute conditional entropy
             H_cond = 0
+            H_1 = self._entropy(y1)
+            H_2 = self._entropy(y2)
+            H_cond = (float(len(X1))/n)*H_1 + (float(len(X2))/n)*H_2
+
             ### ========== TODO : END ========== ###
             H_conds[i] = H_cond
 
@@ -343,28 +347,29 @@ class Tree(object) :
         # base case
         # 1) all samples have same labels
         # 2) all feature values are equal
-        if True : # you should modify this condition
+        if impurity == 0 or len(np.unique(X, axis=0))==1: # you should modify this condition
             # this line is so that the code can run
             # you can comment it out (or not) once you add your own code
-            pass
+            #pass
 
             # create a single leaf
 
+            self._create_new_leaf(node, value, impurity) 
         else:
             # this line is so that the code can run
             # you can comment it out (or not) once you add your own code
-            pass
+            # pass
 
             # choose best feature (and find associated threshold)
-
+            best_feature, best_threshold = self._choose_feature(X, y)
             # make new decision tree node
-
+            self._create_new_node(node, best_feature, best_threshold, value, impurity)
             # split data on best feature
-
+            X1, y1, X2, y2 = self._split_data(X,y,best_feature, best_threshold)
             # build left subtree using recursion
-
+            self._build_helper(X1, y1, self.children_left[node])
             # build right subtree using recursion
-
+            self._build_helper(X2, y2, self.children_right[node])
         ### ========== TODO : END ========== ###
 
     #========================================
@@ -429,6 +434,27 @@ class Tree(object) :
         #   start at root of tree
         #   follow edges to leaf node
         #   find value at leaf node
+        print "feature vector: ", self.feature
+        print "value vector: ", self.value
+        for i in range(0,n):
+            sample = X[i,:]
+            print sample
+            current_node = 0
+            while(current_node != -1):
+                current_feature = self.feature[current_node]
+                current_threshold = self.threshold[current_node]
+                print "current node: ", current_node
+                print "current feature: ", current_feature
+                print "current threshold: ", current_threshold
+                if sample[current_feature]<= current_threshold:
+                    current_node = self.children_left[current_node]
+                    print "splitting left!"
+                else:
+                    current_node = self.children_right[current_node]
+                    print "splitting right!"
+            print self.value[current_node]
+            y[i] = self.value[current_node]
+
 
         ### ========== TODO : END ========== ###
 
