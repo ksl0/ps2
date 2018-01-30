@@ -434,25 +434,26 @@ class Tree(object) :
         #   start at root of tree
         #   follow edges to leaf node
         #   find value at leaf node
-        print "feature vector: ", self.feature
-        print "value vector: ", self.value
+        #print "feature vector: ", self.feature
+        #print "value vector: ", self.value
         for i in range(0,n):
             sample = X[i,:]
-            print sample
+            #print sample
             current_node = 0
-            while(current_node != -1):
+            while(self.children_left[current_node] != -1):
                 current_feature = self.feature[current_node]
                 current_threshold = self.threshold[current_node]
-                print "current node: ", current_node
-                print "current feature: ", current_feature
-                print "current threshold: ", current_threshold
+                #print "current node: ", current_node
+                #print "current feature: ", current_feature
+                #print "current threshold: ", current_threshold
                 if sample[current_feature]<= current_threshold:
                     current_node = self.children_left[current_node]
-                    print "splitting left!"
+                    #print "splitting left!"
                 else:
                     current_node = self.children_right[current_node]
-                    print "splitting right!"
-            print self.value[current_node]
+                    #print "splitting right!"
+            #print "current node at end: ", current_node
+            #print self.value[current_node]
             y[i] = self.value[current_node]
 
 
