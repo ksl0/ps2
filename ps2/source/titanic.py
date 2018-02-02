@@ -1,7 +1,7 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross and Katie Li
 Class       : HMC CS 158
-Date        : 2017 Aug 02
+Date        : 2018 Jan 30
 Description : Titanic
 """
 
