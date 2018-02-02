@@ -1,7 +1,7 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross and Katie Li
 Class       : HMC CS 158
-Date        : 2018 Aug 11
+Date        : 2018 Feb 2
 Description : Polynomial Regression
 """
 
@@ -14,6 +14,9 @@ import os, time
 import numpy as np
 
 # matplotlib libraries
+import matplotlib as mpl
+#I have to use a different backend to run matplotlib in a virtual environment
+mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
 ######################################################################
@@ -116,6 +119,8 @@ class PolynomialRegression() :
         
         ### ========== TODO : START ========== ###
         # part b: modify to create matrix for simple linear model
+        column_of_ones = np.ones((n,1))
+        X = np.hstack((column_of_ones, X))
         # part g: modify to create matrix for polynomial model
         Phi = X
         
@@ -124,7 +129,7 @@ class PolynomialRegression() :
         return Phi
     
     
-    def fit_SGD(self, X, y, eta=0.01,
+    def fit_SGD(self, X, y, eta=None,
                 eps=1e-10, tmax=1000000, verbose=False) :
         """
         Finds the coefficients of a {d-1}^th degree polynomial
@@ -166,7 +171,7 @@ class PolynomialRegression() :
             # change the default eta in the function signature to 'eta=None'
             # and update the line below to your learning rate function
             if eta_input is None :
-                eta = None # change this line
+                eta =  (1.0/(1+t)) # change this line
             else :
                 eta = eta_input
             ### ========== TODO : END ========== ###
@@ -179,7 +184,11 @@ class PolynomialRegression() :
                 
                 # track error
                 # hint: you cannot use self.predict(...) to make the predictions
-                y_pred = y # change this line
+                y_pred_sample =  np.matmul(X[i,:], self.coef_) # change this line
+                #print "theta =" , self.coef_
+                self.coef_ = self.coef_ - (eta * (y_pred_sample - y[i]) * X[i,:])
+
+                y_pred = np.matmul(X, self.coef_)
                 err_list[t] = np.sum(np.power(y - y_pred, 2)) / float(n)                
                 ### ========== TODO : END ========== ###
             
@@ -227,6 +236,7 @@ class PolynomialRegression() :
         # part e: implement closed-form solution
         # hint: use np.dot(...) and np.linalg.pinv(...)
         #       be sure to update self.coef_ with your solution
+        self.coef_ = np.dot(np.dot(np.linalg.pinv(np.dot(np.transpose(X), X)), np.transpose(X)), y)
         
         # part j: include L_2 regularization
         
@@ -252,7 +262,8 @@ class PolynomialRegression() :
         
         ### ========== TODO : START ========== ###
         # part c: predict y
-        y = None
+
+        y = np.matmul(X,self.coef_)
         ### ========== TODO : END ========== ###
         
         return y
@@ -273,7 +284,10 @@ class PolynomialRegression() :
         """
         ### ========== TODO : START ========== ###
         # part d: compute J(theta)
-        cost = 0
+
+        cost = .5 * np.matmul(np.transpose(np.matmul(self.generate_polynomial_features(X), self.coef_)-y),
+                             np.matmul(self.generate_polynomial_features(X), self.coef_)-y)
+
         ### ========== TODO : END ========== ###
         return cost
     
@@ -325,11 +339,13 @@ def main() :
     train_data = load_data('regression_train.csv')
     test_data = load_data('regression_test.csv')
     
-    
+    #
     
     ### ========== TODO : START ========== ###
     # part a: main code for visualizations
     print 'Visualizing data...'
+
+    #plot_data(train_data.X, train_data.y)
     
     ### ========== TODO : END ========== ###
     
@@ -354,15 +370,32 @@ def main() :
     
     # test part d, bullets 2-3
     # for eta = 0.01, soln: theta = [2.441; -2.819], iterations = 616
-    model.fit_SGD(train_data.X, train_data.y, 0.01)
+    t0 = time.clock()
+    model.fit_SGD(train_data.X, train_data.y, 0.01, verbose=False)
     print 'sgd solution: %s' % str(model.coef_)
+    print 'sgd took time:', time.clock()-t0
+    # model.fit_SGD(train_data.X, train_data.y, 10**(-4), verbose=False)
+    # print 'sgd solution with 10^-4: %s' % str(model.coef_)
+
+    model.fit_SGD(train_data.X, train_data.y, 10**(-3), verbose=False)
+    print 'sgd solution with 10^-3: %s' % str(model.coef_)
+
+    model.fit_SGD(train_data.X, train_data.y, 10**(-2), verbose=False)
+    print 'sgd solution with 10^-2: %s' % str(model.coef_)
+
+    model.fit_SGD(train_data.X, train_data.y, 10**(-1), verbose=False)
+    print 'sgd solution with 10^-1: %s' % str(model.coef_)
     
     # test part e -- soln: theta = [2.446; -2.816]
+    t0 = time.clock()
     model.fit(train_data.X, train_data.y)
     print 'closed_form solution: %s' % str(model.coef_)
+    print 'closed form took time: ', time.clock()-t0
     
     # non-test code (YOUR CODE HERE)
-    
+    model.fit_SGD(train_data.X, train_data.y, verbose=False)
+    print 'sgd with new eta solution: %s' % str(model.coef_)
+
     ### ========== TODO : END ========== ###
     
     
