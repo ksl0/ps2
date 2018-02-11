@@ -90,7 +90,9 @@ def main() :
     
     ### ========== TODO : START ========== ###
     # part a: is data linearly separable?
-    
+    clf = Perceptron()
+    clf.fit(train_data.X, train_data.y)
+    print "coefs = %s, iteration = %s" % (clf.coef_, clf.n_iter_)
     ### ========== TODO : END ========== ###
         
     ### ========== TODO : START ========== ###
