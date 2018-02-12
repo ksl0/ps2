@@ -178,7 +178,41 @@ def main() :
     print "Scaled Dummy vs Logistic p = ", pvalues_scaled[1]
     print "Scaled Perceptron vs Logistic p = ", pvalues_scaled[2]
 
+    #t-tests for the standardized vs. non-standardized
 
+    #Dummy Variable Row
+    pval_d = []
+    for i in range(3):
+        result = stats.ttest_rel(score_array_scaled[0].flatten(), score_array[i].flatten())
+        pval_d.append(result[1])
+
+    print "Dummy Row vs Elements in Standardized"
+    print "D vs Standard D", pval_d[0]
+    print "D vs Standard P", pval_d[1]
+    print "D vs Standard L", pval_d[2]
+
+
+    #Perceptron Variable Row
+    pval_p = []
+    for i in range(3):
+        result = stats.ttest_rel(score_array_scaled[1].flatten(), score_array[i].flatten())
+        pval_p.append(result[1])
+
+    print "Perceptron Row vs Elements in Standardized"
+    print "P vs Standard D", pval_p[0]
+    print "P vs Standard P", pval_p[1]
+    print "P vs Standard L", pval_p[2]
+
+    #Logistic Regression Variable Row
+    pval_r = []
+    for i in range(3):
+        result = stats.ttest_rel(score_array_scaled[2].flatten(), score_array[i].flatten())
+        pval_r.append(result[1])
+
+    print "Logistic Row vs Elements in Standardized"
+    print "L vs Standard D", pval_r[0]
+    print "L vs Standard P", pval_r[1]
+    print "L vs Standard L", pval_r[2]
 
     # print out descriptive_stats
     print "Descriptive scaled stats in the order: Dummy, Perceptron, Logistic"
@@ -198,24 +232,20 @@ def main() :
     fig, ax = plt.subplots()
 
 
-    dum_means = (descriptive_stats['mean'][0],
-                    descriptive_stats_scaled['mean'][0])
-    dum_stdev = (descriptive_stats['stdev'][0],
-                    descriptive_stats_scaled['stdev'][0])
+    dum_mean = descriptive_stats['mean'][0]
+    dum_stdev = descriptive_stats['stdev'][0]
 
     percep_means = (descriptive_stats['mean'][1],
                     descriptive_stats_scaled['mean'][1])
     percep_stdev = (descriptive_stats['stdev'][1],
                     descriptive_stats_scaled['stdev'][1])
-    rects1 = ax.bar(ind + width, percep_means, width, color='y', yerr=percep_stdev)
+    rects1 = ax.bar(ind + width, percep_means, width, color='r', yerr=percep_stdev)
 
     log_reg_means = (descriptive_stats['mean'][2],
                     descriptive_stats_scaled['mean'][2])
     log_reg_stdev = (descriptive_stats['stdev'][2],
             descriptive_stats_scaled['stdev'][2])
-    rects2 = ax.bar(ind, log_reg_means, width, color='r', yerr=log_reg_stdev)
-
-
+    rects2 = ax.bar(ind, log_reg_means, width, color='b', yerr=log_reg_stdev)
 
 
 
@@ -225,7 +255,7 @@ def main() :
     ax.set_xticks(ind + width / 2)
     ax.set_xticklabels(('No Preprocessing', 'Standardization'))
 
-    ax.legend((rects1[0], rects2[0]), ('Perceptron', 'Logistic Regression'))
+    ax.legend((rects1[0], rects2[0]), ('Perceptron', 'Logistic Regression'), loc='lower right')
 
 
     def autolabel(rects):
@@ -241,6 +271,10 @@ def main() :
 
     autolabel(rects1)
     autolabel(rects2)
+
+    plt.axhline(y=dum_mean, color ='k', linestyle='solid')
+    plt.axhline(y=(dum_mean + dum_stdev),color='k', linestyle='dashed')
+    plt.axhline(y=(dum_mean - dum_stdev),color='k', linestyle='dashed')
 
     plt.show()
 
