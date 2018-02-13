@@ -1,5 +1,5 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross & Katie Li
 Class       : HMC CS 158
 Date        : 2018 Feb 5
 Description : Perceptron vs Logistic Regression on a Phoneme Dataset
