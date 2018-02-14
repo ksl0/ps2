@@ -118,11 +118,11 @@ def main() :
     # generate the kfs
     kfs = []
     for n in range(N_TRIALS):
-        kf = model_selection.KFold(n_splits=N_SPLITS, shuffle=True)
+        kf = model_selection.KFold(n_splits=N_SPLITS, shuffle=True, random_state=n)
         kfs.append(kf)
 
     descriptive_stats = {'mean':[], 'stdev':[]}
-    dummyclassifier = DummyClassifier()
+    dummyclassifier = DummyClassifier(strategy="most_frequent")
     perceptron  = Perceptron()
     logisticregression = LogisticRegression()
     clfs = [dummyclassifier, perceptron, logisticregression]
