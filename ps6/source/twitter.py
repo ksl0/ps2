@@ -5,6 +5,10 @@ Date        : 2018 Feb 14
 Description : Twitter
 """
 
+"""
+Author: Cai Glencross, Katie Li
+"""
+
 from string import punctuation
 
 # numpy libraries
@@ -27,11 +31,11 @@ from sklearn.utils import shuffle
 def read_vector_file(fname) :
     """
     Reads and returns a vector from a file.
-    
+
     Parameters
     --------------------
         fname  -- string, filename
-    
+
     Returns
     --------------------
         labels -- numpy array of shape (n,)
@@ -43,20 +47,20 @@ def read_vector_file(fname) :
 def write_label_answer(vec, outfile) :
     """
     Writes your label vector to the given file.
-    
+
     Parameters
     --------------------
         vec     -- numpy array of shape (n,) or (n,1), predicted scores
         outfile -- string, output filename
     """
-    
+
     # for this project, you should predict 70 labels
     if(vec.shape[0] != 70):
         print("Error - output vector should have 70 rows.")
         print("Aborting write.")
         return
-    
-    np.savetxt(outfile, vec)    
+
+    np.savetxt(outfile, vec)
 
 
 ######################################################################
@@ -67,16 +71,16 @@ def extract_words(input_string) :
     """
     Processes the input_string, separating it into "words" based on the presence
     of spaces, and separating punctuation marks into their own words.
-    
+
     Parameters
     --------------------
         input_string -- string of characters
-    
+
     Returns
     --------------------
         words        -- list of lowercase "words"
     """
-    
+
     for c in punctuation :
         input_string = input_string.replace(c, ' ' + c + ' ')
     return input_string.lower().split()
@@ -86,21 +90,28 @@ def extract_dictionary(infile) :
     """
     Given a filename, reads the text file and builds a dictionary of unique
     words/punctuations.
-    
+
     Parameters
     --------------------
         infile    -- string, filename
-    
+
     Returns
     --------------------
         word_list -- dictionary, (key, value) pairs are (word, index)
     """
-    
+
     word_list = {}
     with open(infile, 'rU') as fid :
         ### ========== TODO : START ========== ###
         # part 1a: process each line to populate word_list
-        pass
+        index = 0
+        for input_string in fid:
+            words = extract_words(input_string)
+
+            for word in words:
+                if (not (word in word_list)):
+                    word_list[word] = index
+                    index = index + 1
         ### ========== TODO : END ========== ###
 
     return word_list
@@ -110,12 +121,12 @@ def extract_feature_vectors(infile, word_list) :
     """
     Produces a bag-of-words representation of a text file specified by the
     filename infile based on the dictionary word_list.
-    
+
     Parameters
     --------------------
         infile         -- string, filename
         word_list      -- dictionary, (key, value) pairs are (word, index)
-    
+
     Returns
     --------------------
         feature_matrix -- numpy array of shape (n,d)
@@ -123,25 +134,31 @@ def extract_feature_vectors(infile, word_list) :
                             n is the number of non-blank lines in the text file
                             d is the number of unique words in the text file
     """
-    
+
     num_lines = sum(1 for line in open(infile,'rU'))
     num_words = len(word_list)
     feature_matrix = np.zeros((num_lines, num_words))
-    
+
     with open(infile, 'rU') as fid :
         ### ========== TODO : START ========== ###
         # part 1b: process each line to populate feature_matrix
-        pass
+        n = 0 # set index of line number
+        for input_string in fid:
+            words = extract_words(input_string)
+            for word in words:
+                index = word_list[word]
+                feature_matrix[n, index] = 1
+            n = n + 1
         ### ========== TODO : END ========== ###
-    
+
     return feature_matrix
 
 
 def test_extract_dictionary(dictionary) :
     err = "extract_dictionary implementation incorrect"
-    
+
     assert len(dictionary) == 1811, err
-    
+
     exp = [('2012', 0),
            ('carol', 10),
            ('ve', 20),
@@ -158,9 +175,9 @@ def test_extract_dictionary(dictionary) :
 
 def test_extract_feature_vectors(X) :
     err = "extract_features_vectors implementation incorrect"
-    
+
     assert X.shape == (630, 1811), err
-    
+
     exp = np.array([[ 1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.],
                     [ 1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  1.],
                     [ 0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  1.,  1.],
@@ -181,17 +198,17 @@ def test_extract_feature_vectors(X) :
 
 def performance(y_true, y_pred, metric="accuracy") :
     """
-    Calculates the performance metric based on the agreement between the 
+    Calculates the performance metric based on the agreement between the
     true labels and the predicted labels.
-    
+
     Parameters
     --------------------
         y_true -- numpy array of shape (n,), known labels
         y_pred -- numpy array of shape (n,), (continuous-valued) predictions
         metric -- string, option used to select the performance measure
                   options: 'accuracy', 'f1_score', 'auroc', 'precision',
-                           'sensitivity', 'specificity'        
-    
+                           'sensitivity', 'specificity'
+
     Returns
     --------------------
         score  -- float, performance score
@@ -199,19 +216,40 @@ def performance(y_true, y_pred, metric="accuracy") :
     # map continuous-valued predictions to binary labels
     y_label = np.sign(y_pred)
     y_label[y_label==0] = 1 # map points of hyperplane to +1
-    
+
     ### ========== TODO : START ========== ###
     # part 2a: compute classifier performance
-    return 0
-    ### ========== TODO : END ========== ###
 
+    tn, fp, fn, tp = metrics.confusion_matrix(y_true, y_label).ravel()
+
+    if (metric == "accuracy"):
+        accuracy = metrics.accuracy_score(y_true, y_label, normalize = True)
+        selected_metric = accuracy
+    elif (metric == "f1_score"):
+        f1score = metrics.f1_score(y_true, y_label)
+        selected_metric = f1score
+    elif (metric == "precision"):
+        precision = metrics.precision_score(y_true, y_label)
+        selected_metric = precision
+    elif (metric == "auroc"):
+        auroc = metrics.roc_auc_score(y_true, y_pred)
+        selected_metric = auroc
+    elif (metric == "sensitivity"):
+        sensitivity = float(tp)/(tp + fn)
+        selected_metric = sensitivity
+    elif (metric == "specificity"):
+        specificity =float(tn) /( tn + fp)
+        selected_metric = specificity
+
+    return selected_metric
+    ### ========== TODO : END ========== ###
 
 def test_performance() :
     # np.random.seed(1234)
     # y_true = 2 * np.random.randint(0,2,10) - 1
     # np.random.seed(2345)
     # y_pred = (10 + 10) * np.random.random(10) - 10
-    
+
     y_true = [ 1,  1, -1,  1, -1, -1, -1,  1,  1,  1]
     #y_pred = [ 1, -1,  1, -1,  1,  1, -1, -1,  1, -1]
     # confusion matrix
@@ -222,10 +260,10 @@ def test_performance() :
                2.73636929, -6.55612296, -4.79228264,  8.30639981, -0.74368981]
     metrics = ["accuracy", "f1_score", "auroc", "precision", "sensitivity", "specificity"]
     scores  = [     3/10.,      4/11.,   5/12.,        2/5.,          2/6.,          1/4.]
-    
+
     import sys
     eps = sys.float_info.epsilon
-    
+
     for i, metric in enumerate(metrics) :
         assert abs(performance(y_true, y_pred, metric) - scores[i]) < eps, \
             (metric, performance(y_true, y_pred, metric), scores[i])
@@ -237,7 +275,7 @@ def cv_performance(clf, X, y, kf, metric="accuracy") :
     Trains classifier on k-1 folds and tests on the remaining fold.
     Calculates the k-fold cross-validation performance metric for classifier
     by averaging the performance across folds.
-    
+
     Parameters
     --------------------
         clf    -- classifier (instance of SVC)
@@ -247,12 +285,12 @@ def cv_performance(clf, X, y, kf, metric="accuracy") :
         y      -- numpy array of shape (n,), binary labels {1,-1}
         kf     -- model_selection.KFold or model_selection.StratifiedKFold
         metric -- string, option used to select performance measure
-    
+
     Returns
     --------------------
         score   -- float, average cross-validation performance across k folds
     """
-    
+
     scores = []
     for train, test in kf.split(X, y) :
         X_train, X_test, y_train, y_test = X[train], X[test], y[train], y[test]
@@ -270,7 +308,7 @@ def select_param_linear(X, y, kf, metric="accuracy", plot=True) :
     Sweeps different settings for the hyperparameter of a linear-kernel SVM,
     calculating the k-fold CV performance for each setting, then selecting the
     hyperparameter that 'maximize' the average k-fold CV performance.
-    
+
     Parameters
     --------------------
         X      -- numpy array of shape (n,d), feature vectors
@@ -280,32 +318,82 @@ def select_param_linear(X, y, kf, metric="accuracy", plot=True) :
         kf     -- model_selection.KFold or model_selection.StratifiedKFold
         metric -- string, option used to select performance measure
         plot   -- boolean, make a plot
-    
+
     Returns
     --------------------
         C -- float, optimal parameter value for linear-kernel SVM
     """
-    
+
     print 'Linear SVM Hyperparameter Selection based on ' + str(metric) + ':'
     C_range = 10.0 ** np.arange(-3, 3)
-    
+
     ### ========== TODO : START ========== ###
     # part 2c: select optimal hyperparameter using cross-validation
-    scores = [0 for _ in xrange(len(C_range))] # dummy values, feel free to change
-    
+    best_c = (-1,-1) # (score, C_best)
+    scores = []
+    for c_i in C_range:
+        svm = SVC(C = c_i, kernel ='linear')
+        score = cv_performance(svm, X, y, kf, metric=metric)
+        scores.append(score)
+        if (best_c[0] == -1 ) or (score > best_c[0]):
+            best_c = (score, c_i)
+
     if plot:
         lineplot(C_range, scores, metric)
-    
-    return 1.0
+        plt.hold()
+
+    print(best_c[1]) # print out the optimal hyperparameter score
+    return best_c[1]
     ### ========== TODO : END ========== ###
 
+
+def plot_metric_2d(X, y, kf) :
+    """
+    Plots line plots of all the metrics
+
+    Parameters
+    --------------------
+        X      -- numpy array of shape (n,d), feature vectors
+                    n = number of examples
+                    d = number of features
+        y      -- numpy array of shape (n,), binary labels {1,-1}
+        kf     -- model_selection.KFold or model_selection.StratifiedKFold
+
+    Action
+    --------------------
+        creates a line plot
+    """
+
+    C_range = 10.0 ** np.arange(-3, 3)
+    metric_list = ["accuracy", "f1_score", "auroc", "precision", "sensitivity", "specificity"]
+
+    ### ========== TODO : START ========== ###
+    # part 2c: select optimal hyperparameter using cross-validation
+    for metric in metric_list:
+        scores = []
+        for c_i in C_range:
+            svm = SVC(C = c_i, kernel ='linear')
+            score = cv_performance(svm, X, y, kf, metric=metric)
+            scores.append(score)
+
+        xx = range(len(scores))
+        plt.plot(xx, scores, linestyle='-', linewidth=2, label=metric)
+        plt.xticks(xx, C_range)
+        plt.xlabel("C")
+        plt.ylabel("Scores")
+        plt.title("Classifier Performance")
+        plt.legend()
+
+    plt.show()
+
+    ### ========== TODO : END ========== ###
 
 def select_param_rbf(X, y, kf, metric="accuracy") :
     """
     Sweeps different settings for the hyperparameters of an RBF-kernel SVM,
     calculating the k-fold CV performance for each setting, then selecting the
     hyperparameters that 'maximize' the average k-fold CV performance.
-    
+
     Parameters
     --------------------
         X       -- numpy array of shape (n,d), feature vectors
@@ -314,15 +402,15 @@ def select_param_rbf(X, y, kf, metric="accuracy") :
         y       -- numpy array of shape (n,), binary labels {1,-1}
         kf      -- model_selection.KFold or model_selection.StratifiedKFold
         metric  -- string, option used to select performance measure
-    
+
     Returns
     --------------------
         C        -- float, optimal parameter value for an RBF-kernel SVM
         gamma    -- float, optimal parameter value for an RBF-kernel SVM
     """
-    
+
     print 'RBF SVM Hyperparameter Selection based on ' + str(metric) + ':'
-    
+
     ### ========== TODO : START ========== ###
     # part 3b: create grid, then select optimal hyperparameters using cross-validation
     return 0.0, 1.0
@@ -332,7 +420,7 @@ def select_param_rbf(X, y, kf, metric="accuracy") :
 def performance_CI(clf, X, y, metric="accuracy") :
     """
     Estimates the performance of the classifier using the 95% CI.
-    
+
     Parameters
     --------------------
         clf          -- classifier (instance of SVC or DummyClassifier)
@@ -342,20 +430,20 @@ def performance_CI(clf, X, y, metric="accuracy") :
                           d = number of features
         y            -- numpy array of shape (n,), binary labels {1,-1} of test set
         metric       -- string, option used to select performance measure
-    
+
     Returns
     --------------------
         score        -- float, classifier performance
         lower        -- float, lower limit of confidence interval
         upper        -- float, upper limit of confidence interval
     """
-    
+
     try :
         y_pred = clf.decision_function(X)
     except :
         y_pred = clf.predict(X)
     score = performance(y, y_pred, metric)
-    
+
     ### ========== TODO : START ========== ###
     # part 4b: use bootstrapping to compute 95% confidence interval
     # hint: use np.random.randint(...)
@@ -370,24 +458,24 @@ def performance_CI(clf, X, y, metric="accuracy") :
 def lineplot(x, y, label):
     """
     Make a line plot.
-    
+
     Parameters
     --------------------
         x            -- list of doubles, x values
         y            -- list of doubles, y values
         label        -- string, label for legend
     """
-    
+
     xx = range(len(x))
     plt.plot(xx, y, linestyle='-', linewidth=2, label=label)
-    plt.xticks(xx, x)    
+    plt.xticks(xx, x)
     plt.show()
 
 
 def plot_results(metrics, classifiers, *args):
     """
     Make a results plot.
-    
+
     Parameters
     --------------------
         metrics      -- list of strings, metrics
@@ -399,15 +487,15 @@ def plot_results(metrics, classifiers, *args):
                           ...
                         each results is a tuple (score, lower, upper)
     """
-    
+
     num_metrics = len(metrics)
     num_classifiers = len(args) - 1
-    
+
     ind = np.arange(num_metrics)  # the x locations for the groups
     width = 0.7 / num_classifiers # the width of the bars
-    
+
     fig, ax = plt.subplots()
-    
+
     # loop through classifiers
     rects_list = []
     for i in xrange(num_classifiers):
@@ -417,7 +505,7 @@ def plot_results(metrics, classifiers, *args):
         rects = ax.bar(ind + i * width, means, width, label=classifiers[i])
         ax.errorbar(ind + i * width, means, yerr=np.array(errs).T, fmt='none', ecolor='k')
         rects_list.append(rects)
-    
+
     # baseline
     results = args[0]
     for i in xrange(num_metrics) :
@@ -428,30 +516,30 @@ def plot_results(metrics, classifiers, *args):
         plt.plot(xlim, [mean, mean], color='k', linestyle='-', linewidth=2)
         plt.plot(xlim, [err_low, err_low], color='k', linestyle='--', linewidth=2)
         plt.plot(xlim, [err_high, err_high], color='k', linestyle='--', linewidth=2)
-    
+
     ax.set_ylabel('Score')
     ax.set_ylim(0, 1)
     ax.set_xticks(ind + width / num_classifiers)
     ax.set_xticklabels(metrics)
     ax.legend()
-    
+
     def autolabel(rects):
         """Attach a text label above each bar displaying its height"""
         for rect in rects:
             height = rect.get_height()
             ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
                     '%.3f' % height, ha='center', va='bottom')
-    
+
     for rects in rects_list:
         autolabel(rects)
-    
+
     plt.show()
 
 
 ######################################################################
 # main
 ######################################################################
- 
+
 def main() :
     # read the tweets and its labels
     dictionary = extract_dictionary('../data/tweets.txt')
@@ -459,37 +547,48 @@ def main() :
     X = extract_feature_vectors('../data/tweets.txt', dictionary)
     test_extract_feature_vectors(X)
     y = read_vector_file('../data/labels.txt')
-    
+
     # shuffle data (since file has tweets ordered by movie)
     X, y = shuffle(X, y, random_state=0)
-    
+
     # set random seed
     np.random.seed(1234)
-    
+
     # split the data into training (training + cross-validation) and testing set
     X_train, X_test = X[:560], X[560:]
     y_train, y_test = y[:560], y[560:]
-    
+
     metric_list = ["accuracy", "f1_score", "auroc", "precision", "sensitivity", "specificity"]
-    
+
     ### ========== TODO : START ========== ###
     test_performance()
-    
+
     # part 2b: create stratified folds (5-fold CV)
-    
+    kf_strat = StratifiedKFold(n_splits=5)
+    cv_scores = cv_performance(SVC(), X_train, y_train, kf_strat)
+    print "scores for CV: " + str(cv_scores)
+
+    # part 2c: finding the optimal C
+    # best_cs = []
+    # for metric in metric_list:
+    #     best_cs.append(select_param_linear(X, y, kf_strat, metric=metric, plot=False))
+    # print best_cs
     # part 2d: for each metric, select optimal hyperparameter for linear-kernel SVM using CV
-    
-    # part 3c: for each metric, select optimal hyperparameter for RBF-SVM using CV
-    
+    # plot the metrics
+    plot_metric_2d(X, y, kf_strat)
+
+    # part 3c: for each metric, select o
+    # optimal hyperparameter for RBF-SVM using CV
+
     # part 4a: train linear- and RBF-kernel SVMs with selected hyperparameters
-    
+
     # part 4c: use bootstrapping to report performance on test data
     #          use plot_results(...) to make plot
-    
+
     # part 5: identify important features
-    
+
     ### ========== TODO : END ========== ###
-    
+
     ### ========== TODO : START ========== ###
     # Twitter contest
     # uncomment out the following, and be sure to change the filename
