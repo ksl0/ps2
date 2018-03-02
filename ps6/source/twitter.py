@@ -1,5 +1,5 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross
 Class       : HMC CS 158
 Date        : 2018 Feb 14
 Description : Twitter
@@ -418,8 +418,8 @@ def select_param_rbf(X, y, kf, metric="accuracy") :
 
     #rows are gamma and columns are C
     performance_grid = np.zeros((5,4))
-    C_vals = [0.01, 0.1, 1.0, 10.0]
-    gamma_vals = [0.05,0.25, 0.5, 0.75, 1]
+    C_vals = [0.01, 0.1, 1.0, 10.0, 100.0, 1000.0]
+    gamma_vals = [0.001, 0.01, 0.1,1.0, 10]
     for i in range(0,5):
         for j in range(0,4):
             performance_grid[i][j] = cv_performance(SVC(kernel='rbf', gamma=gamma_vals[i],C=C_vals[j]),
@@ -427,7 +427,7 @@ def select_param_rbf(X, y, kf, metric="accuracy") :
 
     indices = np.unravel_index(np.argmax(performance_grid), performance_grid.shape)
 
-    return C_vals[indices[1]], gamma_vals[indices[0]]
+    return C_vals[indices[1]], gamma_vals[indices[0]], performance_grid[indices]
     ### ========== TODO : END ========== ###
 
 
@@ -451,7 +451,7 @@ def performance_CI(clf, X, y, metric="accuracy") :
         lower        -- float, lower limit of confidence interval
         upper        -- float, upper limit of confidence interval
     """
-
+    n, d = X.shape
     try :
         y_pred = clf.decision_function(X)
     except :
@@ -461,7 +461,23 @@ def performance_CI(clf, X, y, metric="accuracy") :
     ### ========== TODO : START ========== ###
     # part 4b: use bootstrapping to compute 95% confidence interval
     # hint: use np.random.randint(...)
-    return score, 0.0, 1.0
+    confidence_array = []
+    for t in range(0,1000):
+        bootstrapped_X = np.zeros((n,d))
+        bootstrapped_y = np.zeros(n)
+        bootstrapped_ypred = np.zeros(n)
+        avg = 0
+        for i in range(0,n):
+            index = np.random.randint(0, n)
+            bootstrapped_X[i,:]=X[index,:]
+            bootstrapped_y[i] = y[index]
+            bootstrapped_ypred[i] = y_pred[index]
+        confidence_array.append(performance(bootstrapped_y, bootstrapped_ypred, metric))
+
+
+    confidence_array.sort()
+
+    return score, confidence_array[24], confidence_array[974]
     ### ========== TODO : END ========== ###
 
 
@@ -593,14 +609,61 @@ def main() :
 
     # part 3c: for each metric, select o
     # optimal hyperparameter for RBF-SVM using CV
-    C, gamma = select_param_rbf(X, y, kf_strat)
-    print "optimal C for accuracy= %f, optimal gamma for accuracy %f" % (C, gamma)
+    #C, gamma, score = select_param_rbf(X, y, kf_strat)
+    #print "optimal C for accuracy= %f, optimal gamma for accuracy %f, score was %f" % (C, gamma, score)
+
+
+
+    metrics = ["accuracy", "f1_score", "auroc", "precision", "sensitivity", "specificity"]
+    # for metric in metrics:
+    #     #C, gamma, score = select_param_rbf(X, y, kf_strat, metric=metric)
+    #     score = cv_performance(SVC(kernel='rbf', gamma=0.01, C=10.0),
+    #                                             X, y, kf_strat, metric=metric)
+    #     print "optimal C for %s= %f, optimal gamma %f, score was %f" % (metric, 10.0, 0.01, score)
+
+
+
+
+
     # part 4a: train linear- and RBF-kernel SVMs with selected hyperparameters
+    linear_svm = SVC(kernel='linear', C=0.1)
+    rbf_svm = SVC(kernel='rbf', gamma=0.01, C=10.0)
+    linear_svm.fit(X_train,y_train)
+    rbf_svm.fit(X_train,y_train)
+
 
     # part 4c: use bootstrapping to report performance on test data
     #          use plot_results(...) to make plot
+    # print "LINEAR SVM"
+    # for metric in metrics: 
+    #     score, low, high = performance_CI(linear_svm, X_test, y_test, metric= metric)
+    #     print "for %s: score = %f, low end: %f, high end = %f" % (metric, score, low , high)
+    # print "RBF SVM"
+    # for metric in metrics: 
+    #     score, low, high = performance_CI(rbf_svm, X_test, y_test, metric= metric)
+    #     print "for %s: score = %f, low end: %f, high end = %f" % (metric, score, low , high)
 
     # part 5: identify important features
+    print "linear coefs: "
+
+    coefs = linear_svm.coef_[0].argsort()[-10:][::-1]
+    print coefs
+    for coef in coefs:
+        for word, index in dictionary.iteritems():   
+            if index == coef:
+                print word
+
+
+
+    coefs = linear_svm.coef_[0].argsort()[:10][::-1]
+    print coefs
+    for coef in coefs:
+        for word, index in dictionary.iteritems():   
+            if index == coef:
+                print word
+
+
+
 
     ### ========== TODO : END ========== ###
 
