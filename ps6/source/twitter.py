@@ -15,6 +15,8 @@ from string import punctuation
 import numpy as np
 
 # matplotlib libraries
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 # scikit-learn libraries
@@ -413,7 +415,19 @@ def select_param_rbf(X, y, kf, metric="accuracy") :
 
     ### ========== TODO : START ========== ###
     # part 3b: create grid, then select optimal hyperparameters using cross-validation
-    return 0.0, 1.0
+
+    #rows are gamma and columns are C
+    performance_grid = np.zeros((5,4))
+    C_vals = [0.01, 0.1, 1.0, 10.0]
+    gamma_vals = [0.05,0.25, 0.5, 0.75, 1]
+    for i in range(0,5):
+        for j in range(0,4):
+            performance_grid[i][j] = cv_performance(SVC(kernel='rbf', gamma=gamma_vals[i],C=C_vals[j]),
+                                                X, y, kf, metric=metric)
+
+    indices = np.unravel_index(np.argmax(performance_grid), performance_grid.shape)
+
+    return C_vals[indices[1]], gamma_vals[indices[0]]
     ### ========== TODO : END ========== ###
 
 
@@ -572,14 +586,15 @@ def main() :
     # best_cs = []
     # for metric in metric_list:
     #     best_cs.append(select_param_linear(X, y, kf_strat, metric=metric, plot=False))
-    # print best_cs
+    #print best_cs
     # part 2d: for each metric, select optimal hyperparameter for linear-kernel SVM using CV
     # plot the metrics
-    plot_metric_2d(X, y, kf_strat)
+    #plot_metric_2d(X, y, kf_strat)
 
     # part 3c: for each metric, select o
     # optimal hyperparameter for RBF-SVM using CV
-
+    C, gamma = select_param_rbf(X, y, kf_strat)
+    print "optimal C for accuracy= %f, optimal gamma for accuracy %f" % (C, gamma)
     # part 4a: train linear- and RBF-kernel SVMs with selected hyperparameters
 
     # part 4c: use bootstrapping to report performance on test data
