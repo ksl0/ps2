@@ -599,71 +599,97 @@ def main() :
     print "scores for CV: " + str(cv_scores)
 
     # part 2c: finding the optimal C
-    # best_cs = []
-    # for metric in metric_list:
-    #     best_cs.append(select_param_linear(X, y, kf_strat, metric=metric, plot=False))
-    #print best_cs
+    best_cs = []
+    for metric in metric_list:
+        best_cs.append(select_param_linear(X, y, kf_strat, metric=metric, plot=False))
+    print best_cs
     # part 2d: for each metric, select optimal hyperparameter for linear-kernel SVM using CV
     # plot the metrics
-    #plot_metric_2d(X, y, kf_strat)
+    plot_metric_2d(X, y, kf_strat)
 
     # part 3c: for each metric, select o
     # optimal hyperparameter for RBF-SVM using CV
-    #C, gamma, score = select_param_rbf(X, y, kf_strat)
-    #print "optimal C for accuracy= %f, optimal gamma for accuracy %f, score was %f" % (C, gamma, score)
+    C, gamma, score = select_param_rbf(X, y, kf_strat)
+    print "optimal C for accuracy= %f, optimal gamma for accuracy %f, score was %f" % (C, gamma, score)
 
 
 
     metrics = ["accuracy", "f1_score", "auroc", "precision", "sensitivity", "specificity"]
-    # for metric in metrics:
-    #     #C, gamma, score = select_param_rbf(X, y, kf_strat, metric=metric)
-    #     score = cv_performance(SVC(kernel='rbf', gamma=0.01, C=10.0),
-    #                                             X, y, kf_strat, metric=metric)
-    #     print "optimal C for %s= %f, optimal gamma %f, score was %f" % (metric, 10.0, 0.01, score)
+    for metric in metrics:
+        #C, gamma, score = select_param_rbf(X, y, kf_strat, metric=metric)
+        score = cv_performance(SVC(kernel='rbf', gamma=0.01, C=10.0),
+                                                X, y, kf_strat, metric=metric)
+        print "optimal C for %s= %f, optimal gamma %f, score was %f" % (metric, 10.0, 0.01, score)
 
 
 
 
 
     # part 4a: train linear- and RBF-kernel SVMs with selected hyperparameters
-    linear_svm = SVC(kernel='linear', C=0.1)
+    linear_svm = SVC(kernel='linear', C=1)
     rbf_svm = SVC(kernel='rbf', gamma=0.01, C=10.0)
+    dummy_classifier = DummyClassifier(strategy="most_frequent")
     linear_svm.fit(X_train,y_train)
     rbf_svm.fit(X_train,y_train)
-
+    dummy_classifier.fit(X_train, y_train)
 
     # part 4c: use bootstrapping to report performance on test data
-    #          use plot_results(...) to make plot
-    # print "LINEAR SVM"
-    # for metric in metrics: 
-    #     score, low, high = performance_CI(linear_svm, X_test, y_test, metric= metric)
-    #     print "for %s: score = %f, low end: %f, high end = %f" % (metric, score, low , high)
-    # print "RBF SVM"
-    # for metric in metrics: 
-    #     score, low, high = performance_CI(rbf_svm, X_test, y_test, metric= metric)
-    #     print "for %s: score = %f, low end: %f, high end = %f" % (metric, score, low , high)
+             # use plot_results(...) to make plot
+    linear_svm_performance = []
+    print "LINEAR SVM"
+    for metric in metrics:
+        result_metric = performance_CI(linear_svm, X_test, y_test, metric= metric)
+        linear_svm_performance.append(result_metric)
+
+        print "for %s: score = %f, low end: %f, high end = %f" % (metric, result_metric[0],
+                                                    result_metric[1], result_metric[2])
+
+    rbf_svm_performance = []
+    print "RBF SVM"
+    for metric in metrics:
+        result_metric = performance_CI(rbf_svm, X_test, y_test, metric= metric)
+        rbf_svm_performance.append(result_metric)
+        print "for %s: score = %f, low end: %f, high end = %f" % (metric, result_metric[0],
+                                                    result_metric[1], result_metric[2])
+
+    # use a baseline performance classifier for comparison
+    dummy_classifier_performance = []
+    print "Baseline classifier - majority classifier with Dummy Classifier"
+    for metric in metrics:
+        result_metric = performance_CI(dummy_classifier, X_test, y_test, metric= metric)
+        dummy_classifier_performance.append(result_metric)
+        print "for %s: score = %f, low end: %f, high end = %f" % (metric, result_metric[0],
+                                                    result_metric[1], result_metric[2])
+
+
+
+    # create the bar plot
+    classifiers = ["Linear SVM", "RBF SVM"]
+    plot_results(metrics, classifiers, dummy_classifier_performance, linear_svm_performance, rbf_svm_performance)
+
 
     # part 5: identify important features
-    print "linear coefs: "
+    full_linear_svm = SVC(kernel='linear', C=1)
+    full_linear_svm.fit(X,y)
 
-    coefs = linear_svm.coef_[0].argsort()[-10:][::-1]
-    print coefs
-    for coef in coefs:
-        for word, index in dictionary.iteritems():   
+    print "positive linear coefs: "
+
+    coefs_index = full_linear_svm.coef_[0].argsort()[-10:][::-1]
+    for coef in coefs_index:
+        print full_linear_svm.coef_[0][coef]
+        for word, index in dictionary.iteritems():
             if index == coef:
                 print word
 
 
 
-    coefs = linear_svm.coef_[0].argsort()[:10][::-1]
-    print coefs
-    for coef in coefs:
-        for word, index in dictionary.iteritems():   
+    print "negative linear coefs: "
+    coefs_index = full_linear_svm.coef_[0].argsort()[:10][::-1]
+    for coef in coefs_index:
+        print full_linear_svm.coef_[0][coef]
+        for word, index in dictionary.iteritems():
             if index == coef:
                 print word
-
-
-
 
     ### ========== TODO : END ========== ###
 
