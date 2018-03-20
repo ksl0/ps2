@@ -327,8 +327,18 @@ class MulticlassSVM :
         #
         # if you have a choice between multiple occurrences of the minimum values,
         # use the index corresponding to the first occurrence
+        for example in range(n):
+            predictions = []
+            for i in range(num_classes):
+                pred = 0
+                for j in range(num_classifiers):
+                    # svms[j].predict(X[example,:])
+                    pred += loss_func(self.R, self.svms[j].decision_function(X[example,:]))
+                predictions[i] = pred
 
-        pass
+            index_class = predictions.index(min(predictions))
+            y[example] = self.classes[index_class]
+
         ### ========== TODO : END ========== ###
 
         return y
@@ -389,6 +399,8 @@ def main() :
 
     multiclass = MulticlassSVM(ova, C=10, kernel='poly', gamma=1, degree=4, coef0=1)
     multiclass = multiclass.fit(train_data.X, train_data.y)
+    predictions = multiclass.predict(test_data.X)
+
 
     print(multiclass.svms[0].support_)
     ### ========== TODO : END ========== ###
