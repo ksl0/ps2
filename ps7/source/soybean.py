@@ -276,10 +276,10 @@ class MulticlassSVM :
             pos_ndx = []
             neg_ndx = []
             for ndx in range(0, n):
-                print(y[ndx])
-                if R[int(y[ndx])-97, i] == 1:
+                class_index = list(classes).index(y[ndx])
+                if R[class_index, i] == 1:
                     pos_ndx.append(ndx)
-                elif R[int(y[ndx])-97, i] == -1:
+                elif R[class_index, i] == -1:
                     neg_ndx.append(ndx)
 
             new_X_pos = X[pos_ndx,:]
@@ -289,15 +289,9 @@ class MulticlassSVM :
             new_X = np.vstack((new_X_pos, new_X_neg))
             new_Y = np.append(
                     np.ones(len(pos_ndx)), (-1*np.ones(len(neg_ndx))) )
-            #
-            # for ndx in pos_ndx:
-            #     new_X.append(X[ndx])
-            #     new_Y.append(1)
-            # for ndx in neg_ndx:
-            #     new_X.append(X[ndx])
-            #     new_Y.append(-1)
 
             self.svms[i].fit(new_X, new_Y)
+        return self
         ### ========== TODO : END ========== ###
 
 
@@ -393,19 +387,10 @@ def main() :
 
     ova = generate_output_codes(len(np.unique(train_data.y)), 'ova')
 
+    multiclass = MulticlassSVM(ova, C=10, kernel='poly', gamma=1, degree=4, coef0=1)
+    multiclass = multiclass.fit(train_data.X, train_data.y)
 
-    def custom_kernel(x, z):
-        """
-        Custom kernel for the dataset
-        (1 + <x,z>)^4
-        """
-        #TODO: why is this dot product not happy
-        return (1 + np.dot(x, z))
-    print(train_data.y)
-    multiclass = MulticlassSVM(ova, C = 10, kernel=custom_kernel)
-    multiclass.fit(train_data.X, train_data.y)
-    print(multiclass.svms[0])
-
+    print(multiclass.svms[0].support_)
     ### ========== TODO : END ========== ###
 
 if __name__ == "__main__" :
