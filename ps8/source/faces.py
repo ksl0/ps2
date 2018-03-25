@@ -223,7 +223,18 @@ def main() :
     #util.show_image(np.mean(X, axis=1))
 
     U, mu = util.PCA(X)
-    util.plot_gallery([util.vec_to_image(U[:,i]) for i in xrange(12)])
+    #util.plot_gallery([util.vec_to_image(U[:,i]) for i in xrange(12)])
+
+
+    for i in [1,10,50, 100, 500, 1288]:
+
+        Z, ul = util.apply_PCA_from_Eig(X, U, i, mu)
+
+        new_X = util.reconstruct_from_PCA(Z, ul, mu)
+
+        util.plot_gallery([new_X[j] for j in xrange(12)])
+    
+    
 
     ### ========== TODO : END ========== ###
     

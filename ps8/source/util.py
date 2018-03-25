@@ -251,7 +251,9 @@ def apply_PCA_from_Eig(X, U, l, mu) :
     n,d = X.shape
 
     Ul = U[:, range(l)]
-    Z = np.matmul((X-np.repeat([mu],n, axis=0)), Ul)
+    avgs = np.repeat([mu],n, axis=0)
+    differences = (X-avgs)
+    Z = np.matmul(differences, Ul)
     ### ========== TODO : END ========== ###
     return Z, Ul
 
@@ -274,6 +276,15 @@ def reconstruct_from_PCA(Z, U, mu) :
     ### ========== TODO : START ========== ###
     # part 1c: implement
     # hint: you can find X_rec in one-line using matrix-vector algebra
-    X_rec = None
+    X_rec = np.matmul(Z, U.transpose()) + np.repeat([mu], n, axis=0)
     ### ========== TODO : END ========== ###
     return X_rec
+
+
+
+
+
+
+
+
+
