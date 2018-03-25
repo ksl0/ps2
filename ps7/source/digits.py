@@ -1,7 +1,7 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross & Katie Li
 Class       : HMC CS 158
-Date        : 2018 Mar 05
+Date        : 2018 Mar 23
 Description : Bagging with Digits Dataset
               This code was adapted from course material by Jenna Wiens (UMich)
 """
@@ -13,12 +13,16 @@ import collections
 import numpy as np
 
 # matplotlib libraries
+import matplotlib as mpl
+mpl.use('TkAgg')
+
 import matplotlib.pyplot as plt
 
 # scikit-learn libraries
 from sklearn.datasets import load_digits
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
@@ -195,6 +199,23 @@ def main():
     
     ### ========== TODO : START ========== ###
     # part d: determine pixel importance
+
+    print(X)
+
+    randomForest = RandomForestClassifier()
+    randomForest.fit(X, y)
+    importances = randomForest.feature_importances_
+    importances = importances.reshape(digits.images[0].shape)
+
+    # Plot pixel importances
+    plt.matshow(importances, cmap=plt.cm.hot)
+    plt.title("Pixel importances with forests of trees")
+    plt.colorbar()
+    plt.show()
+
+
+
+
     
     ### ========== TODO : END ========== ###
 

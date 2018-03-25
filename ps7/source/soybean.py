@@ -1,7 +1,7 @@
 """
-Author      : Yi-Chieh Wu
+Author      : Cai Glencross & Katie Li 
 Class       : HMC CS 158
-Date        : 2018 Mar 05
+Date        : 2018 Mar 23
 Description : Multiclass Classification on Soybean Dataset
               This code was adapted from course material by Tommi Jaakola (MIT)
 """
@@ -360,7 +360,7 @@ def main() :
     test_output_codes()
 
     # plot loss functions
-    z = np.arange(-2, 3, 0.25)
+    z = np.arange(-2, 3, 0.01)
     hamming = map(lambda u: (1 - np.sign(u))/2, z)
     sigmoid1 = map(lambda u: (1/ (1+np.exp(u))), z)
     sigmoid2 = map(lambda u: (1/ (1+np.exp(2*u))), z)
