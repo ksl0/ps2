@@ -114,11 +114,17 @@ class Cluster(object) :
         ### ========== TODO : START ========== ###
         # part 2b: implement
         # set the centroid label to any value (e.g. the most common label in this cluster)
+
+        #check if there are actually points
+        if len(self.points) == 0:
+            return None
+
+
         labels = []
         for p in self.points :
             labels.append(p.label)
 
-        attrs = np.zeros(len(self.points[0]) )
+        attrs = np.zeros(len(self.points[0].attrs))
         total = 0
         for p in self.points:
             total += 1
@@ -127,7 +133,7 @@ class Cluster(object) :
 
         cluster_label, count = stats.mode(self.points)
 
-        centroid = Point("centroid", cluster_label, attrs)
+        centroid = Point("centroid", cluster_label, attrs/float(total))
 
 
 
@@ -207,6 +213,10 @@ class ClusterSet(object):
         ### ========== TODO : START ========== ###
         # part 2b: implement
         centroids = []
+
+        for cluster in self.members:
+            centroids.append(cluster.centroid())
+
         return centroids
         ### ========== TODO : END ========== ###
 

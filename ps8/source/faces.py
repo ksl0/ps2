@@ -132,7 +132,11 @@ def random_init(points, k) :
     """
     ### ========== TODO : START ========== ###
     # part 2c: implement (hint: use np.random.choice)
-    return None
+
+
+    return np.random.choice(points, k)
+
+
     ### ========== TODO : END ========== ###
 
 
@@ -192,7 +196,34 @@ def kMeans(points, k, init='random', plot=False) :
     #   (2) Repeat until the clustering no longer changes.
     #   (3) To plot, use plot_clusters(...).
     k_clusters = ClusterSet()
+    k_clusters.members = [None for i in range(k)]
+
+    centroids = random_init(points, k)
+
+    while True:
+        cluster_assignments = [[] for i in range(k)]
+        for p in points:
+            distances = map(lambda u : p.distance(u), centroids)
+            assigned_cluster = np.argmin(distances)
+            cluster_assignments[assigned_cluster].append(p)
+
+        for j in range(len(cluster_assignments)):
+            k_clusters.members[j] = Cluster(cluster_assignments[j])
+
+        new_centroids = map(lambda u : u.centroid(), k_clusters.members)
+
+        old_centroid_attrs = map(lambda u : u.attrs, centroids)
+        new_centroid_attrs = map(lambda u : u.attrs, new_centroids)
+        
+        if np.array_equal(old_centroid_attrs,new_centroid_attrs):
+            break
+        else:
+            centroids=new_centroids
+
     return k_clusters
+
+
+
     ### ========== TODO : END ========== ###
 
 
@@ -226,13 +257,13 @@ def main() :
     #util.plot_gallery([util.vec_to_image(U[:,i]) for i in xrange(12)])
 
 
-    for i in [1,10,50, 100, 500, 1288]:
+    # for i in [1,10,50, 100, 500, 1288]:
 
-        Z, ul = util.apply_PCA_from_Eig(X, U, i, mu)
+    #     Z, ul = util.apply_PCA_from_Eig(X, U, i, mu)
 
-        new_X = util.reconstruct_from_PCA(Z, ul, mu)
+    #     new_X = util.reconstruct_from_PCA(Z, ul, mu)
 
-        util.plot_gallery([new_X[j] for j in xrange(12)])
+    #     util.plot_gallery([new_X[j] for j in xrange(12)])
     
     
 
