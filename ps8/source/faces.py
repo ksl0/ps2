@@ -155,6 +155,8 @@ def cheat_init(points) :
     """
     ### ========== TODO : START ========== ###
     # part 2d: implement
+
+    #modification -- return the centroids
     initial_points = []
     return initial_points
     ### ========== TODO : END ========== ###
@@ -194,7 +196,12 @@ def kMeans(points, k, init='random', plot=False) :
     k_clusters = ClusterSet()
     k_clusters.members = [None for i in range(k)]
 
-    centroids = random_init(points, k)
+
+    if (init =='random'):
+        centroids = random_init(points, k)
+    else:
+        centroids = cheat_init(points, k)
+
     iteration = 0;
 
     while True:
