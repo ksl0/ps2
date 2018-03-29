@@ -281,17 +281,6 @@ def main() :
     #util.show_image(X[1])
     #util.show_image(X[2])
 
-    X1, y1  = util.limit_pics(X, y, [1], 40)
-    util.show_image(X1[0])
-
-    X1, y1  = util.limit_pics(X, y, [12], 40)
-    util.show_image(X1[0])
-
-    X1, y1  = util.limit_pics(X, y, [0], 40)
-    util.show_image(X1[0])
-
-    X1, y1  = util.limit_pics(X, y, [6], 40)
-    util.show_image(X1[0])
 
 
     scores = np.zeros((19,19))
@@ -300,14 +289,26 @@ def main() :
             if i!=j:
                 X1, y1  = util.limit_pics(X, y, [i,j], 40)
                 face_points = build_face_image_points(X1,y1)
-                cluster_set = kMeans(face_points, 2, "random", plot=False)
+                cluster_set = kMeans(face_points, 2, "cheat", plot=False)
                 scores[i,j] = cluster_set.score()
     np.fill_diagonal(scores, np.iinfo(np.int16).max)
-    print "it did best with: ", np.unravel_index(np.argmin(scores),scores.shape)
+    similar_tuple = np.unravel_index(np.argmin(scores),scores.shape)
+    print "it did worst with: ", similar_tuple
     np.fill_diagonal(scores, np.iinfo(np.int16).min)
-    print "it did worst with: ", np.unravel_index(np.argmax(scores),scores.shape)
+    distinct_tuple = np.unravel_index(np.argmax(scores),scores.shape)
+    print "it did best with: ", distinct_tuple
 
+    X1, y1  = util.limit_pics(X, y, [similar_tuple[0]], 40)
+    util.show_image(X1[0])
 
+    X1, y1  = util.limit_pics(X, y, [similar_tuple[1]], 40)
+    util.show_image(X1[0])
+
+    X1, y1  = util.limit_pics(X, y, [distinct_tuple[0]], 40)
+    util.show_image(X1[0])
+
+    X1, y1  = util.limit_pics(X, y, [distinct_tuple[1]], 40)
+    util.show_image(X1[0])
 
 
 
