@@ -157,7 +157,25 @@ def cheat_init(points) :
     # part 2d: implement
 
     #modification -- return the centroids
+
+    #get number of unique labels
+    label_array = map(lambda u: u.label, points)
+    labels = np.unique(label_array)
+    num_labels = len(labels)
+
+    cluster_assignments = [[] for i in range(num_labels)]
+
+    for p in points:
+        assigned_cluster = labels.tolist().index(p.label)
+        cluster_assignments[assigned_cluster].append(p)
+
     initial_points = []
+    for j in range(num_labels):
+        initial_points.append(Cluster(cluster_assignments[j]).centroid())
+
+
+
+
     return initial_points
     ### ========== TODO : END ========== ###
 
@@ -200,7 +218,7 @@ def kMeans(points, k, init='random', plot=False) :
     if (init =='random'):
         centroids = random_init(points, k)
     else:
-        centroids = cheat_init(points, k)
+        centroids = cheat_init(points)
 
     iteration = 0;
 
@@ -263,6 +281,38 @@ def main() :
     #util.show_image(X[1])
     #util.show_image(X[2])
 
+    X1, y1  = util.limit_pics(X, y, [1], 40)
+    util.show_image(X1[0])
+
+    X1, y1  = util.limit_pics(X, y, [12], 40)
+    util.show_image(X1[0])
+
+    X1, y1  = util.limit_pics(X, y, [0], 40)
+    util.show_image(X1[0])
+
+    X1, y1  = util.limit_pics(X, y, [6], 40)
+    util.show_image(X1[0])
+
+
+    scores = np.zeros((19,19))
+    for i in range(19):
+        for j in range(19):
+            if i!=j:
+                X1, y1  = util.limit_pics(X, y, [i,j], 40)
+                face_points = build_face_image_points(X1,y1)
+                cluster_set = kMeans(face_points, 2, "random", plot=False)
+                scores[i,j] = cluster_set.score()
+    np.fill_diagonal(scores, np.iinfo(np.int16).max)
+    print "it did best with: ", np.unravel_index(np.argmin(scores),scores.shape)
+    np.fill_diagonal(scores, np.iinfo(np.int16).min)
+    print "it did worst with: ", np.unravel_index(np.argmax(scores),scores.shape)
+
+
+
+
+
+
+
     #util.show_image(np.mean(X, axis=1))
 
     U, mu = util.PCA(X)
@@ -300,10 +350,10 @@ def main() :
     k = 3
 
     # test cluster using random initialization
-    kmeans_clusters = kMeans(sim_points, k, init='random', plot=True)
+    #kmeans_clusters = kMeans(sim_points, k, init='random', plot=True)
 
     # test cluster using cheat initialization
-    # kmeans_clusters = kMeans(sim_points, k, init='cheat', plot=True)
+    kmeans_clusters = kMeans(sim_points, k, init='cheat', plot=True)
 
 
 
